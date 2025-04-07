@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api-inferencia:
+    image: jorgelinares/api-api-inferencia:latest
+    ports:
+      - "8000:8000"
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'       # Máximo un cuarto núcleo de CPU
+          memory: 256M       # Máximo 256MB de RAM
+        reservations:
+          cpus: '0.25'       # Sugerencia de 1/4 de núcleo
+          memory: 256M       # Sugerencia de 256MB de RAM
+  locust:
+    build:
+      context: locust/.
+    container_name: locust
+    ports:
+      - "8089:8089"
+    depends_on:
+      - api-inferencia
+    environment:
+      - LOCUST_HOST=http://api:8000
+  
