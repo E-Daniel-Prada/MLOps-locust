@@ -1,19 +1,14 @@
 version: '3.8'
 
 services:
-  api-inferencia:
-    image: jorgelinares/api-api-inferencia:latest
+  api:
+    build:
+      context: api/.
+    container_name: api
     ports:
       - "8000:8000"
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'       # Máximo un cuarto núcleo de CPU
-          memory: 256M       # Máximo 256MB de RAM
-        reservations:
-          cpus: '0.25'       # Sugerencia de 1/4 de núcleo
-          memory: 256M       # Sugerencia de 256MB de RAM
+    restart: unless-stopped
+       
   locust:
     build:
       context: locust/.
@@ -21,7 +16,21 @@ services:
     ports:
       - "8089:8089"
     depends_on:
-      - api-inferencia
+      - api
     environment:
       - LOCUST_HOST=http://api:8000
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
   
